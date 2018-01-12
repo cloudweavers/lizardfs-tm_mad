@@ -3,3 +3,10 @@
 # (NodeWeaver Srl) 2017-2018
 # info@nodeweaver.eu
 
+This is the same set of drivers used within our NodeWeaver platform, compatible with Lizardfs 3.x and OpenNebula 5.4.x
+Prerequisites:
+- lizardfs command executable by the user that launch the OpenNebula probes (usually oneadmin) and in the default path 
+- the lizardfs datastore must be mounted and reachable from all the nodes where the TM drivers are in use, and with the same path
+
+The TM drivers are derived from the latest 5.4.3 "shared" TM drivers, with all the copies and other operations modified to use the 
+live snapshot feature of LizardFS.
