@@ -19,7 +19,8 @@ live snapshot feature of LizardFS.
 ## To install in OpenNebula:
 Copy the drivers in /var/lib/one/remotes/tm/lizardfs
 
-```# fix ownership
+```
+# fix ownership
 # is you have changed the default user and group of OpenNebula, substitute oneadmin.onedadmin with <installationuser>.<installationgroup>
 chown -R oneadmin.oneadmin /var/lib/one/remotes/tm/lizardfs
 ```
