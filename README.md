@@ -26,29 +26,30 @@ chown -R oneadmin.oneadmin /var/lib/one/remotes/tm/lizardfs
 ```
 
 in the section
-
+```
 TM_MAD = [
     executable = "one_tm",
     arguments = "-t 15 -d dummy,lvm,shared,fs_lvm,qcow2,ssh,vmfs,ceph,dev,lizardfs"
 ]
-
+```
 (or the name you use for the lizardfs repo)
 
 if you want to add Datastore support:
 Create a DFS directory in the datastore directory, and add the files in the repo
 https://github.com/cloudweavers/lizardfs-DM_MAD
 In the one.conf file add "DFS" in the section
-
+```
 DATASTORE_MAD = [
     executable = "one_datastore",
     arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph,dev,DFS"
 ]
-
+```
 restart opennebula:
-
+```
 service opennebula restart
 service opennebula-sunstone restart
-
+```
 As oneadmin user sync the remote scripts:
-
+```
 su - oneadmin -c 'onehost sync --force'
+```
