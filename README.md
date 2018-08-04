@@ -35,13 +35,13 @@ TM_MAD = [
 (or the name you use for the lizardfs repo)
 
 if you want to add Datastore support:
-Create a DFS directory in the datastore directory, and add the files in the repo
+Create a lizardfs directory in the datastore directory, and add the files in the repo
 https://github.com/cloudweavers/lizardfs-DM_MAD
-In the one.conf file add "DFS" in the section
+In the one.conf file add "lizardfs" in the section
 ```
 DATASTORE_MAD = [
     executable = "one_datastore",
-    arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph,dev,DFS"
+    arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph,dev,lizardfs"
 ]
 ```
 restart opennebula:
