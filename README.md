@@ -64,7 +64,8 @@ DS_MAD_CONF = [
 ]
 
 ```
-(the TM_MAD_CONF and DS_MAD_CONF were graciously highlighted by GitHub user https://github.com/ioiioi
+(the TM_MAD_CONF and DS_MAD_CONF were graciously highlighted by GitHub user https://github.com/ioiioi )
+
 restart opennebula:
 ```
 service opennebula restart
