@@ -44,6 +44,27 @@ DATASTORE_MAD = [
     arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph,dev,lizardfs"
 ]
 ```
+
+and
+
+```
+TM_MAD_CONF = [
+    NAME = "lizardfs",
+    LN_TARGET = "NONE",
+    CLONE_TARGET = "SYSTEM",
+    SHARED = "YES",
+    DS_MIGRATE = "YES",
+    ALLOW_ORPHANS = "NO"
+]
+DS_MAD_CONF = [
+    NAME = "lizardfs",
+    REQUIRED_ATTRS = "",
+    PERSISTENT_ONLY = "NO",
+    MARKETPLACE_ACTIONS = "export"
+]
+
+```
+(the TM_MAD_CONF and DS_MAD_CONF were graciously highlighted by GitHub user @ioiioi
 restart opennebula:
 ```
 service opennebula restart
@@ -53,3 +74,7 @@ As oneadmin user sync the remote scripts:
 ```
 su - oneadmin -c 'onehost sync --force'
 ```
+
+Thanks to 
+
+
