@@ -55,7 +55,13 @@ TM_MAD_CONF = [
     SHARED = "YES",
     DS_MIGRATE = "YES",
     ALLOW_ORPHANS = "NO"
+
+    TM_MAD_SYSTEM = "shared",
+    LN_TARGET_SHARED = "NONE",
+    CLONE_TARGET_SHARED = "SYSTEM",
+    DISK_TYPE_SHARED = "FILE"    
 ]
+
 DS_MAD_CONF = [
     NAME = "lizardfs",
     REQUIRED_ATTRS = "",
