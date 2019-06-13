@@ -81,7 +81,7 @@ if [ ! -d "${SNAP_DIR}" ]; then
 fi
 
 # Copy current state to a new snapshot
-cp "${CURRENT_PATH}" "${SNAP_PATH}"
+lizardfs makesnapshot -o "${CURRENT_PATH}" "${SNAP_PATH}"
 EOT
 )
 
