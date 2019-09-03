@@ -89,7 +89,7 @@ DST_READLN=\$($READLINK -f $DST_PATH)
 if [ \( -L $SRC_PATH \) -a \( "\$SRC_READLN" = "\$DST_READLN" \) ] ; then
     echo "Not copying files to image repo, they are the same"
 else
-    lizardfs makesnapshot $SRC_PATH $DST_PATH
+    lizardfs makesnapshot \$SRC_READLN $DST_PATH
 fi
 EOF
 )
