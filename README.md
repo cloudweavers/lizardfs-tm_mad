@@ -72,6 +72,16 @@ DS_MAD_CONF = [
 ```
 (the TM_MAD_CONF and DS_MAD_CONF were graciously highlighted by GitHub user https://github.com/ioiioi )
 
+Then, add `lizardfs` on `kvm` to the list of live disk snapshot capable `TM`:
+
+edit `/etc/one/vmm_exec/vmm_execrc`
+
+```
+# Space separated list of VMM-TM pairs that support live disk snapshots. VMM
+# and TM must be separated by '-'
+LIVE_DISK_SNAPSHOTS="kvm-qcow2 kvm-ceph kvm-lizardfs"
+```
+
 restart opennebula:
 ```
 service opennebula restart
