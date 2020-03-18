@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -------------------------------------------------------------------------- #
-# Copyright 2002-2017, OpenNebula Project, OpenNebula Systems                #
+# Copyright 2002-2020, OpenNebula Project, OpenNebula Systems                #
 #                                                                            #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may    #
 # not use this file except in compliance with the License. You may obtain    #
@@ -33,8 +33,8 @@ fi
 
 DRIVER_PATH=$(dirname $0)
 
-source $TMCOMMON
-source ${DRIVER_PATH}/../../vmm/kvm/kvmrc
+. $TMCOMMON
+. ${DRIVER_PATH}/../../etc/vmm/kvm/kvmrc
 
 SRC_PATH=$(arg_path $SRC)
 SRC_HOST=$(arg_host $SRC)
@@ -52,114 +52,48 @@ unset i j XPATH_ELEMENTS
 while IFS= read -r -d '' element; do
     XPATH_ELEMENTS[i++]="$element"
 done < <(onevm show -x $VMID| $XPATH \
-                    /VM/TEMPLATE/DISK[DISK_ID=$DISK_ID]/SOURCE \
-                    /VM/TEMPLATE/DISK[DISK_ID=$DISK_ID]/CLONE \
-                    /VM/TEMPLATE/DISK[DISK_ID=$DISK_ID]/TARGET \
                     /VM/DEPLOY_ID \
-                    '%m%/VM/TEMPLATE/DISK/TARGET')
+                    /VM/TEMPLATE/DISK[DISK_ID=$DISK_ID]/SOURCE \
+                    /VM/TEMPLATE/DISK[DISK_ID=$DISK_ID]/CLONE)
 
+DEPLOY_ID="${XPATH_ELEMENTS[j++]}"
 DISK_SRC="${XPATH_ELEMENTS[j++]}"
 CLONE="${XPATH_ELEMENTS[j++]}"
-TARGET="${XPATH_ELEMENTS[j++]}"
-DEPLOY_ID="${XPATH_ELEMENTS[j++]}"
-ALL_DISKS="${XPATH_ELEMENTS[j++]}"
 
 SYSTEM_DS_PATH=$(dirname ${SRC_PATH})
+IMAGE_DS_PATH=$(dirname ${DISK_SRC})
 
-SYSTEM_DS_DISK_PATH="${SYSTEM_DS_PATH}/disk.${DISK_ID}"
-SYSTEM_DS_DISK_PATH_SHORT="disk.${DISK_ID}"
 
 if [ "$CLONE" = "YES" ]; then
-    DISK_PATH="${SYSTEM_DS_DISK_PATH}"
-    DISK_PATH_SHORT="$(basename ${SYSTEM_DS_DISK_PATH})"
+    DISK_PATH="${SYSTEM_DS_PATH}/disk.${DISK_ID}"
 else
     DISK_PATH=$DISK_SRC
-    DISK_PATH_SHORT=$DISK_PATH
 fi
 
-NEXT_SNAP_ID=$(($SNAP_ID+1))
-
 SNAP_DIR="${DISK_PATH}.snap"
-SNAP_DIR_SHORT="${DISK_PATH_SHORT}.snap"
+SNAP_PATH="${SNAP_DIR}/${SNAP_ID}"
+SNAP_PATH_RELATIVE=$(basename ${SNAP_PATH})
+CURRENT_PATH=${DISK_PATH}
 
-SNAP_PATH="${SNAP_DIR}/${NEXT_SNAP_ID}"
-SNAP_PATH_SHORT="${SNAP_DIR_SHORT}/${NEXT_SNAP_ID}"
-
-# virsh snapshot-create by default creates snapshots for all the disks that
-# are not read only. To be able to make a snapshot in only one of the disks
-# an xml must be created describing all of the disks and setting the value
-# snapshot='no' to the disks that are not going to be snapshotted.
-
-# <domainsnapshot>
-#   <name>1</name>
-#   <description>snap 1</description>
-#   <disks>
-#     <disk name='vda' snapshot='no'/>
-#     <disk name='vdb'>
-#       <source file='/var/lib/one/datastores/1/09eec196c67b38dea41048a628978600.snap/1'/>
-#     </disk>
-#     <disk name='vdc' snapshot='no'/>
-#   </disks>
-# </domainsnapshot>
-
-DOC="
-<domainsnapshot>
-  <name>${DISK_ID}-${SNAP_ID}</name>
-  <description>snap ${DISK_ID}-${SNAP_ID}</description>
-  <disks>"
-
-for disk in $ALL_DISKS; do
-    if [ "$disk" = "$TARGET" ]; then
-        DOC="$DOC
-    <disk name='$disk' snapshot='external'>
-      <source file='$SNAP_PATH'/>
-    </disk>"
-    else
-        DOC="$DOC
-    <disk name='$disk' snapshot='no'/>"
-    fi
-done
-
-DOC="$DOC
-  </disks>
-</domainsnapshot>"
 
 CMD=$(cat <<EOT
 set -ex -o pipefail
 
 mkdir -p "${SNAP_DIR}"
 
-PREVIOUS_SNAP=\$(readlink $SYSTEM_DS_DISK_PATH)
-
-# Temporary xml file
-FILENAME="/tmp/snapshot-$VMID-$DISK_ID-$SNAP_ID"
-echo "$DOC" > \$FILENAME
-
 if virsh -c $LIBVIRT_URI domfsfreeze $DEPLOY_ID ; then
     trap "virsh -c $LIBVIRT_URI domfsthaw $DEPLOY_ID" EXIT TERM INT HUP
 elif virsh -c $LIBVIRT_URI suspend $DEPLOY_ID; then
     trap "virsh -c $LIBVIRT_URI resume $DEPLOY_ID" EXIT TERM INT HUP
 else
-    error_message "Could not domfsfreeze or suspend domain"
+    error_message "$script_name: Could not domfsfreeze or suspend domain"
     exit 1
 fi
 
-# older qemu-img requires relative backing file paths
-# to be resolvable from the current directory
-cd "${SNAP_DIR}"
-
-$QEMU_IMG create -o backing_fmt=qcow2 -b "\${PREVIOUS_SNAP}" \
-    -f qcow2 ${QCOW2_OPTIONS} "${SNAP_PATH}"
-
-virsh -c $LIBVIRT_URI snapshot-create $DEPLOY_ID --disk-only --atomic --no-metadata \
-    --reuse-external --xmlfile \$FILENAME
-
-rm \${FILENAME}
-
-ln -sf $SNAP_PATH_SHORT $SYSTEM_DS_DISK_PATH
+# Copy current state to a new snapshot
+lizardfs makesnapshot -o "${CURRENT_PATH}" "${SNAP_PATH}"
 EOT
 )
 
 ssh_exec_and_log "${SRC_HOST}" "${CMD}" \
                  "Error creating snapshot ${SNAP_PATH}"
-
