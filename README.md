@@ -13,7 +13,7 @@ Prerequisites:
 * lizardfs command executable by the user that launch the OpenNebula probes (usually oneadmin) and in the default path 
 * the lizardfs datastore must be mounted and reachable from all the nodes where the TM drivers are in use, and with the same path
 
-The TM drivers are derived from the latest 5.4.3 "shared" TM drivers, with all the copies and other operations modified to use the 
+The TM drivers are derived from the latest 6.0.0.2 "shared" TM drivers, with all the copies and other operations modified to use the 
 live snapshot feature of LizardFS.
 
 ## To install in OpenNebula:
